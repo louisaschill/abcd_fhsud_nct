@@ -15,21 +15,20 @@ clear all; close all;
 
 subjs = 'all'; event = 'baseline_year_1_arm_1'; 
 
-basedir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/imaging';
+basedir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/non_imaging/Release 5.1/core/'; 
 cd(basedir); 
 
 %% MRI (model, manufacturer and serial number) 
 mri_var = {'src_subject_id','mri_info_manufacturer','mri_info_manufacturersmn','mri_info_deviceserialnumber'};
 mri_var_names = {'subjectkey','manufacturer','model','serial_number'};
-mri = readtable([basedir '/mri_y_adm_info.csv']);
+mri = readtable('/Users/louisaschilling/Desktop/Datasets/ABCD/Data/imaging/mri_y_adm_info.csv');
 mri = extractInstrument(mri, mri_var, mri_var_names, event, subjs);
 mri.manufacturer = categorical(mri.manufacturer);
 mri.model = categorical(mri.model);
 
-basedir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/non_imaging/Release 5.1/core/'; 
-cd(basedir); 
 
 %% Site, family ID and age 
+
 site_var = {'src_subject_id','site_id_l','rel_family_id','interview_age'};
 site_var_names = {'subjectkey','site','rel_family_id','age'};
 site = readtable([basedir '/abcd-general/abcd_y_lt.csv']);
@@ -60,10 +59,19 @@ sex.gender(sex.gender == '5') = categorical("GQ");
 % Race:  1 = White; 2 = Black; 3 = Hispanic; 4 = Asian; 5 = Other
 
 dem_var = {'src_subject_id','eventname','race_ethnicity','demo_comb_income_v2',...
-    'demo_prnt_ed_v2','demo_adopt_agex_v2','demo_ethn_v2', 'demo_prim'}; 
-dem_var_names = {'subjectkey','eventname','race','income','parentEd', 'prim_id'};
+    'demo_prnt_income_v2','demo_prtnr_income_v2',...
+    'demo_prnt_ed_v2', 'demo_prtnr_ed_v2','demo_prim'}; 
+dem_var_names = {'subjectkey','eventname','race','comb_income',...
+    'parent_income', 'partner_income', 'parentEd', 'partnerEd', 'prim_id'};
 dem = readtable([basedir '/abcd-general/abcd_p_demo.csv']);
 dem = extractInstrument(dem, dem_var, dem_var_names, event, subjs);
+
+% Household income (use combined income or if unavailable use one of parent)
+dem.income = dem.comb_income;
+missing_comb_income = isnan(dem.income); % Logical array for missing combined income
+dem.income(missing_comb_income) = dem.parent_income(missing_comb_income);
+missing_comb_income = isnan(dem.income);
+dem.income(missing_comb_income) = dem.partner_income(missing_comb_income);
 
 % Parent Education level: Recode parent education: 21 levels --> 5 categories:
 % 0 = Never attended/Kindergarten only, 1 = 1st grade; 2 = 2nd grd; 
@@ -80,15 +88,16 @@ dem = extractInstrument(dem, dem_var, dem_var_names, event, subjs);
 
 parentEd_cat = nan(height(dem),1);
 for i = 1:height(dem)
-    if dem.parentEd(i) < 13
+    parentEd = max(double(dem.parentEd(i)), double(dem.partnerEd(i))); % take higher of two 
+    if parentEd < 13
         parentEd_cat(i) = 1;
-    elseif dem.parentEd(i) > 13 && dem.parentEd(i) <= 14
+    elseif parentEd == 13 || parentEd == 14
         parentEd_cat(i) = 2;
-    elseif dem.parentEd(i) == 15
+    elseif parentEd == 15
         parentEd_cat(i) = 3;
-    elseif dem.parentEd(i) >= 16 && dem.parentEd(i) <= 18
+    elseif parentEd >= 16 && parentEd <= 18
         parentEd_cat(i) = 4;
-    elseif dem.parentEd(i) >= 19
+    elseif parentEd >= 19
         parentEd_cat(i) = 5; 
     end 
 end 
@@ -102,14 +111,17 @@ dem.parentEd_cat = categorical(parentEd_cat);
 
 income_cat = nan(height(dem),1);
 for i = 1:height(dem)
-    if dem.income(i) <= 6
-        income_cat(i) = 1; 
-    elseif dem.income(i) >= 7 && dem.income(i) <= 8
-        income_cat(i) = 2; 
-     elseif dem.income(i) == 9 || dem.income(i) == 10 
-        income_cat(i) = 3; 
-    end 
-end 
+    income = max(dem.parent_income(i), dem.partner_income(i)); 
+    income = max(income, dem.income(i));
+   
+    if income <= 6
+        income_cat(i) = 1;
+    elseif income >= 7 && income <= 8
+        income_cat(i) = 2;
+    elseif income == 9 || income == 10
+        income_cat(i) = 3;
+    end
+end
 dem.income_cat = categorical(income_cat); 
 
 %% Family history of SUD and other mental illness 
@@ -163,22 +175,23 @@ fhxssp.matGmSUD = (fhxssp.matGMAlc) > 0 | (fhxssp.matGMDrug) > 0;
 fhxssp.grandparentsSUD = fhxssp.patGpSUD + fhxssp.patGmSUD + fhxssp.matGpSUD + fhxssp.matGmSUD;
 
 % FH SUD
+fhxssp.typeSUD = nan(height(fhxssp),1);
 for s = 1:height(fhxssp)
     fhxssp.FHSUD(s) = calculateFH(fhxssp.parentSUD(s), fhxssp.grandparentsSUD(s), fhxssp.missingSUD(s), 1, 2);
     fhxssp.FHAUD(s) = calculateFH(fhxssp.parentAlc(s), fhxssp.grandparentAlc(s), fhxssp.missingAUD(s), 1, 2);
     fhxssp.FHDUD(s) = calculateFH(fhxssp.parentDrug(s), fhxssp.grandparentDrug(s), fhxssp.missingDUD(s), 1, 2);
 
-    if fhxssp.FHSUD(i) == "FH-"
-        fhxssp.typeSUD(i) = categorical("FH-");
+    if fhxssp.FHSUD(s) == "FH-"
+        fhxssp.typeSUD(s) = categorical("FH-");
     else
-        if fhxssp.FHDUD(i) == "FH+" & fhxssp.FHAUD(i)  == "FH+"
-            fhxssp.typeSUD(i) = categorical("FH+-Both");
-        elseif fhxssp.FHDUD(i) == "FH+" & fhxssp.FHAUD(i) ~= "FH+"
-            fhxssp.typeSUD(i) = categorical("FH+-DUD");
-        elseif fhxssp.FHDUD(i) ~= "FH+" & fhxssp.FHAUD(i) == "FH+"
-            fhxssp.typeSUD(i) = categorical("FH+-AUD");
+        if fhxssp.FHDUD(s) == "FH+" && fhxssp.FHAUD(s)  == "FH+"
+            fhxssp.typeSUD(s) = categorical("FH+-Both");
+        elseif fhxssp.FHDUD(s) == "FH+" && fhxssp.FHAUD(s) ~= "FH+"
+            fhxssp.typeSUD(s) = categorical("FH+-DUD");
+        elseif fhxssp.FHDUD(s) ~= "FH+" && fhxssp.FHAUD(s) == "FH+"
+            fhxssp.typeSUD(s) = categorical("FH+-AUD");
         else
-            fhxssp.typeSUD(i) = categorical("Multi");
+            fhxssp.typeSUD(s) = categorical("Multi");
         end
     end
 end
@@ -209,32 +222,36 @@ for i = 1:height(fhxssp)
 end 
 
 %% In utero substance use - knowing of pregnancy 
-dhxs_var = {'src_subject_id', 'devhx_ss_9_cigs_per_day_p','devhx_ss_9_alcohol_max_p',...
-    'devhx_ss_9_alcohol_avg_p','devhx_ss_9_alcohol_effects_p','devhx_ss_9_marijuana_amt_p',...
-    'devhx_ss_9_coc_crack_amt_p','devhx_ss_9_her_morph_amt_p','devhx_ss_9_oxycont_amt_p',...
-    'devhx_9_other1_times','devhx_9_other2_times','devhx_9_other3_times','devhx_9_other4_times',...
-    'devhx_9_other5_times','devhx_ss_12_p'};
-dhxs_var_names = {'subjectkey','cigsPerDay', 'maxDrinksSitting','drinksPerWeek'...
-    'drinksToFeel','marijuanaPerDay','crackPerDay', 'morphPerDay', 'oxyPerDay', 'otherDrug1perDay',...
-    'otherDrug2perDay','otherDrug3perDay', 'otherDrug4perDay','otherDrug5perDay','premature'};
+% other drugs categories: 0 = None; 
+% 1 = Amphetamines/ methamphetamine 
+% 2 = Benzodiazepines; 
+% 3 = Caffeine; 
+% 4 = Cathinones (bath salts); 5 = Fake/synthetic marijuana;
+% 6 = GHB; 7 = Hallucinogens (LSD or acid); 
+% 8 = Inhalants; 
+% 9 = Ketamine (special K); 
+% 10 = MDMA (ecstasy; 
+% 11 = Opioids; 
+% 12 = Other;
+% 13 = Barbituates; 
+
+dhxs_var = {'src_subject_id','devhx_9_tobacco','devhx_9_alcohol' 'devhx_9_marijuana',...
+    'devhx_9_her_morph', 'devhx_9_oxycont','devhx_9_other_drugs','devhx_9_other1_name_2',...
+    'devhx_9_other2_name_2','devhx_9_other3_name_2','devhx_9_other4_name_2','devhx_9_other5_name_2','devhx_ss_9_alcohol_max_p',...
+    'devhx_ss_9_alcohol_avg_p','devhx_caffeine_11'}; 
+dhxs_var_names = {'subjectkey','pregtobacco','pregalcohol','pregmarijuana', 'pregmorph','pregoxy','pregother',...
+    'pregother_name1','pregother_name2','pregother_name3','pregother_name4',...
+    'pregother_name5','pregalcmax', 'pregalcweek','pregcaffeine'};
 dhxs = readtable([basedir '/physical-health/ph_p_dhx.csv']);
 dhxs = extractInstrument(dhxs, dhxs_var, dhxs_var_names,event,subjs);
-dhxs.subDuringPreg = (dhxs.cigsPerDay) > 0 | (dhxs.drinksPerWeek) > 7 | (dhxs.maxDrinksSitting) > 4 |...
-    (dhxs.marijuanaPerDay) > 0 | (dhxs.crackPerDay) > 0 | ...
-    (dhxs.morphPerDay) >0 | (dhxs.oxyPerDay) > 0 | (dhxs.otherDrug1perDay) > 0 |  ...
-    (dhxs.otherDrug2perDay) > 0 |(dhxs.otherDrug3perDay) > 0 |(dhxs.otherDrug4perDay) > 0 |(dhxs.otherDrug5perDay) > 0;
 
-% Breast-feeding substance use 
-bf_var = {'src_subject_id', 'bfq_breastfeed_p','bfq_alcohol_p','bfq_alcohol_avg_p',...
-    'bfq_coc_crack_p','bfq_her_morph_p','bfq_other4_name_oth_p','bfq_oxycont_p','bfq_tobacco_p'};
-bf_var_names = {'subjectkey','breastfed','alcBF','avgDrinksPW','cocBF',...
-    'herMorphBF','otherDrugBF','oxyBF','tobBF'};
-bf = readtable([basedir '/physical-health/ph_p_bfq.csv']);
-bf = extractInstrument(bf, bf_var, bf_var_names,'3_year_follow_up_y_arm_1',subjs);
-bf.alcBreastFed = (bf.breastfed)== 1 & (bf.alcBF) == 1; 
-bf.drugBreastFed = (bf.breastfed) == 1 & (bf.cocBF) == 1 & ...
-    (bf.herMorphBF) == 1 & (bf.otherDrugBF) == 1 & (bf.oxyBF) == 1; 
-bf.smokeBreastFed = (bf.breastfed) == 1 & (bf.tobBF) == 1; 
+dhxs.missingPregSub = isnan(dhxs.pregtobacco)|isnan(dhxs.pregalcohol)|...
+    isnan(dhxs.pregmarijuana)|isnan(dhxs.pregmorph)|...
+    isnan(dhxs.pregoxy)|isnan(dhxs.pregother);
+
+dhxs.subDuringPreg = (dhxs.pregtobacco) == 1 | (dhxs.pregalcohol == 1) | ...
+    (dhxs.pregmarijuana) == 1 | (dhxs.pregmorph) == 1 | ...
+    (dhxs.pregoxy) == 1 | (dhxs.pregother) == 1; 
 
 %% Child substance use  
 
@@ -454,6 +471,15 @@ sst_var_names = {'subjectkey', 'rate_stop_correct'};
 sst = readtable([basedir '/imaging/mri_y_tfmr_sst_beh.csv']);
 sst = extractInstrument(sst, sst_var, sst_var_names,event,subjs);
 
+%% Puberty
+pub_var = {'src_subject_id', 'pds_p_ss_male_category','pds_p_ss_female_category'};
+pub_var_names = {'subjectkey', 'puberty_male', 'puberty_female'}; 
+pub = readtable([basedir '/physical-health/ph_p_pds.csv']);
+pub = extractInstrument(pub, pub_var, pub_var_names,event,subjs);
+pub.puberty_combined = pub.puberty_male; % Initialize with male scores
+nan_male = isnan(pub.puberty_male); % Find rows where male scores are NaN
+pub.puberty_combined(nan_male) = pub.puberty_female(nan_male);
+
 %% SPH: HORMONES 
 sph_var = {'src_subject_id','hormone_sal_sex','hormon_sal_notes_y___1','hormon_sal_notes_y___2','hormon_sal_notes_y___3',...
     'hormon_sal_notes_y___4','hormon_sal_notes_y___5','hormon_sal_notes_y___6','hormone_scr_dhea_mean','hormone_scr_dhea_rep1','hormone_scr_dhea_rep1_ll','hormone_scr_dhea_rep1_qns',...
@@ -512,7 +538,7 @@ horm.ert((~inds_rep2) & inds_rep1) = sph.hormone_scr_ert_rep1((~inds_rep2) & ind
 %% Compile all data tables into mega subjectInfo table 
 tabs = {site, mri, sex, dem,ehis,res_coi,res_adi,nsc, pm_y, pm_p, fes, ...
     psb_y, psb_p, crpbi, srpf, cbcl, cbcl2, cbcl3, cbcl4, pps, bisbas, gbi, bdef, fhxssp,...
-    dhxs,st_p,su,horm,ksads_sud,upps,sst}; 
+    dhxs,st_p,su,pub,horm,ksads_sud,upps,sst}; 
 
 subjectInfo = mergeTables(tabs);
 
@@ -521,9 +547,9 @@ subjectInfo.sexFHSUD = categorical(cellstr(sexFHSUD));
 
 %% SAVE subjectInfo table 
 nsubj = height(subjectInfo); 
-savedir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/non_imaging/Release 5.1/';
+savedir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Data'; mkdir(savedir); cd(savedir);
 save(fullfile(savedir,'nonimagingInfo_all_subjs_release51.mat'),'subjectInfo'); 
-
+disp('Saved subjectInfo for all subjects.')
 %% Helper functions 
 
 function fhCategory = calculateFH(parentCount, grandparentCount, missing, thresholdParents, thresholdGrandparents)

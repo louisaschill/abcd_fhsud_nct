@@ -1,12 +1,10 @@
 % Louisa Schilling -- updated December 2024 
 % Exclusions for ABCD FH SUD Project
-% This script applies various exclusion criteria to the ABCD dataset and 
-% adds mean framewise displacement for included subjects to subjectInfo. 
-
+% This script applies various exclusion criteria to the ABCD dataset. 
 clear all; close all;
+
 %% Load All Subjects Information
-baseDir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/non_imaging/Release 5.1/';
-cd(baseDir);
+basedir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Data'; cd(basedir);
 load('nonimagingInfo_all_subjs_release51.mat'); % Loads `subjectInfo`
 nTotal = size(subjectInfo, 1);
 disp(['Total cohort N = ' num2str(nTotal)]);
@@ -23,14 +21,7 @@ nExcluded = nExcluded + sum(missingRsfmri);
 subjectInfo = subjectInfo(~missingRsfmri, :);
 disp(['Excluded subjects missing rsfMRI data: n = ' num2str(sum(missingRsfmri))]);
 
-% 2. Exclude retracted subjects
-retractedSubject = 'NDARINVPAXW8WZB';
-isRetracted = strcmp(subjectInfo.subjectkey, retractedSubject);
-nExcluded = nExcluded + sum(isRetracted);
-subjectInfo = subjectInfo(~isRetracted, :);
-disp(['Excluded retracted subjects: n = ' num2str(sum(isRetracted))]);
-
-% 3. Exclude Philips scanner subjects or undefined scanner type
+% 2. Exclude Philips scanner subjects or undefined scanner type
 notPhilips = subjectInfo.manufacturer ~= 'Philips Medical Systems';
 notUndefined = ~isundefined(subjectInfo.manufacturer);
 excludePhilips = ~(notPhilips & notUndefined);
@@ -38,15 +29,20 @@ nExcluded = nExcluded + sum(excludePhilips);
 subjectInfo = subjectInfo(~excludePhilips, :);
 disp(['Excluded Philips or undefined scanner type: n = ' num2str(sum(excludePhilips))]);
 
-% 4. Exclude subjects outside FH SUD criteria (FH+, FH-, FH+/-)
+% 3. Exclude subjects missing FH SUD info (not FH+, FH-, nor FH+/-)
 validFHSUD = ismember(subjectInfo.FHSUD, {'FH-', 'FH+', 'FH+/-'});
 nExcluded = nExcluded + sum(~validFHSUD);
 subjectInfo = subjectInfo(validFHSUD, :);
-disp(['Excluded subjects outside FH criteria: n = ' num2str(sum(~validFHSUD))]);
+disp(['Excluded subjects missing FH SUD info: n = ' num2str(sum(~validFHSUD))]);
+
+% 4. Exclude missing maternal SU 
+nExcluded = nExcluded + sum(subjectInfo.missingPregSub);
+subjectInfo = subjectInfo(~subjectInfo.missingPregSub, :);
+disp(['Excluded missing info about in utero SU: n = ' num2str(sum(subjectInfo.missingPregSub))]);
 
 % 5. Exclude FH- kids whose moms drank >7 drinks/week or >4 in one sitting
 highMaternalDrinking = (subjectInfo.FHSUD == 'FH-' | subjectInfo.FHSUD == 'FH+/-') & ...
-                       (subjectInfo.drinksPerWeek > 7 | subjectInfo.maxDrinksSitting >= 4);
+                       (subjectInfo.pregalcweek > 7 | subjectInfo.pregalcmax >= 4);
 nExcluded = nExcluded + sum(highMaternalDrinking);
 subjectInfo = subjectInfo(~highMaternalDrinking, :);
 disp(['Excluded FH- kids with high maternal drinking: n = ' num2str(sum(highMaternalDrinking))]);
@@ -75,34 +71,36 @@ nExcluded = nExcluded + sum(mismatchedSex);
 subjectInfo = subjectInfo(~mismatchedSex, :);
 disp(['Excluded subjects with mismatched saliva and biological sex: n = ' num2str(sum(mismatchedSex))]);
 
-% 10. Exclude missing parental information (income, education, mental health)
-missingIncome = ismissing(subjectInfo.income);
+% 10. Exclude missing parent income
+missingIncome = ismissing(subjectInfo.income_cat);
 nExcluded = nExcluded + sum(missingIncome);
 subjectInfo = subjectInfo(~missingIncome, :);
 disp(['Excluded subjects missing income info: n = ' num2str(sum(missingIncome))]);
 
+% 11. Exclude missing parent education 
 missingParentEd = ismissing(subjectInfo.parentEd_cat);
 nExcluded = nExcluded + sum(missingParentEd);
 subjectInfo = subjectInfo(~missingParentEd, :);
 disp(['Excluded subjects missing parental education info: n = ' num2str(sum(missingParentEd))]);
 
+% 12. Exclude missing parent mental health
 missingParentMH = ismissing(subjectInfo.parentMH);
 nExcluded = nExcluded + sum(missingParentMH);
 subjectInfo = subjectInfo(~missingParentMH, :);
 disp(['Excluded subjects missing parental mental health info: n = ' num2str(sum(missingParentMH))]);
 
-%% Add FD mean to subjectInfo 
-baseDir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/imaging'; cd(baseDir); 
-load('FD_mean_by_subject.mat');
+%% Add extra SUD Info 
+nsubjs = height(subjectInfo);
 
-inds = ismember(subjkeys,subjectInfo.subjectkey);
-FD_mean = FD_mean(inds); subjkeys = subjkeys(inds);% only included subjects 
-[~,inds] = ismember(subjectInfo.subjectkey,subjkeys);
-FD_mean = FD_mean(inds);subjkeys = subjkeys(inds); % Put in same order
-if ~all(strcmp(subjkeys,subjectInfo.subjectkey)) % check in same order 
-    error('Subject keys not in same order for FD mean')
-end 
-subjectInfo.FD_mean = FD_mean;
+grandparentSUD = subjectInfo.grandparentsSUD * 0.5; 
+parentSUD = subjectInfo.parentSUD; 
+subjectInfo.familydensitySUD = parentSUD + grandparentSUD; 
+
+subjectInfo.sex = categorical(string(subjectInfo.sex)); 
+subjectInfo.FHSUD = categorical(string(subjectInfo.FHSUD)); 
+subjectInfo.sexFHSUD = categorical(string(subjectInfo.sexFHSUD));
+subjectInfo.manufacturer = categorical(string(subjectInfo.manufacturer));
+subjectInfo.site = categorical(string(subjectInfo.site));
 
 %% Final Summary
 nIncluded = height(subjectInfo);
@@ -115,9 +113,8 @@ for i = 1:length(categories)
     count = height(subjectInfo(subjectInfo.sexFHSUD == categories{i}, :));
     disp(['Total ' categories{i} ' subjects: n = ' num2str(count)]);
 end
-
 %% Save Updated Subject Information
-saveDir = '/Users/louisaschilling/Desktop/Datasets/ABCD/Data/non_imaging';
-cd(saveDir);
+savedir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Data';
+cd(savedir);
 save('subjectInfo_SUDcohort.mat', 'subjectInfo', 'nIncluded');
 disp('subjectInfo saved.');
