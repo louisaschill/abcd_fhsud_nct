@@ -32,11 +32,11 @@ Code for paper: Sex-specific differences in brain activity dynamics of youth wit
 6. Individual SC 
 
 **Reviewer analyses**
-5. Follow-up SU and behavioral/environmental correlations
-6. Clusters by MRI model
-7. By type of FH SUD
-8. FO/AR/DT/TP by group
-9. By puberty status 
+1. Follow-up SU and behavioral/environmental correlations
+2. Clusters by MRI model
+3. By type of FH SUD
+4. FO/AR/DT/TP by group
+5. By puberty status 
 
 **Helper functions**
 - run_kmeans.m
