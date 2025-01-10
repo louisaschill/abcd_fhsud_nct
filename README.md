@@ -5,13 +5,14 @@ Code for paper: Sex-specific differences in brain activity dynamics of youth wit
 1. Extract non-imaging (demographic, SU, fam hx, etc) information: *abcd_get_nonimaging.m*
 2. Exclude subjects based on exclusion criteria: *abcd_exclusions.m*
 3. Extract imaging info and pre-process (normalize by mean GM signal and remove outlier frames): *abcd_get_imaging.m*
+4. Concatenate timeseries across all subjects for clustering: *abcd_concTS.m*
+
 
 ***k*-means clustering**
-1. Concatenate timeseries across all subjects for clustering: *abcd_concTS.m*
-2. Repeat *k*-means across full range of k's to identify optimal *k* range: *abcd_repkmeans.m*
-3. Elbow plot for optimal k identification: 
-4. Get final clustering from partition with most adjusted mutual information across runs: *abcd_kmeans_ami.m*
-5. Name clusters by cosine similarity and radar plots (Fig. 1):  
+1. Repeat *k*-means across full range of k's to identify optimal *k* range: *abcd_repkmeans.m*
+2. Elbow plot for optimal k identification: 
+3. Get final clustering from partition with most adjusted mutual information across runs: *abcd_kmeans_ami.m*
+4. Name clusters by cosine similarity and radar plots (Fig. 1):  
 
 **Network control theory**
 1. Calculate subject specific centroids:
