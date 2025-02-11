@@ -1,14 +1,10 @@
 # ABCD_FHSUD_NCT
 
-This repository contains the code to reproduce the analysis in:
+This repository contains the code to reproduce the analysis in Schilling et al. 2024, "Sex-specific differences in brain activity dynamics of youth with a family history of substance use disorder", bioRxiv.
 
-**Schilling et al. 2024** - "Sex-specific differences in brain activity dynamics of youth with a family history of substance use disorder" (bioRxiv).
-
-This code is based on previous work by:
+This code is based on previous work by (added here with modifications):
 - Singleton et al., *Nature Communications*, 2022 ([Repo](https://github.com/singlesp/energy_landscape))
 - Cornblath et al., *Communications Biology*, 2020 ([Repo](https://github.com/ejcorn/brain_states))
-
-Code from these repositories has been included here with slight modifications.
 
 ---
 
