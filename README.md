@@ -32,12 +32,12 @@ The following scripts should be used for each step of the analysis:
 
 ### ***k*-means clustering**
 1. **Run repeated *k*-means across a range of *k* values** to determine the optimal range:  
-   `abcd_repkmeans.m` and  `run_kmeans.m`
-2. **Generate an elbow plot** for *k* selection.
-      `abcd_elbow.m`
+   `abcd_repkmeans.m` and `run_kmeans.m`
+2. **Generate an elbow plot** for *k* selection: 
+   `abcd_elbow.m`
 3. **Obtain final clustering** using the partition with the highest adjusted mutual information across runs:  
    `abcd_kmeans_ami.m`
-4. **Name clusters** using cosine similarity and radar plots (*Fig. 2*).
+4. **Name clusters** using cosine similarity and radar plots (*Fig. 2*): 
    `abcd_radar_plots.m`
    
 ### **Network Control Theory (NCT) Analysis**
