@@ -1,4 +1,4 @@
-# Network control theory analysis: family history of substance use disorder in children from the ABCD study
+# NCT Analysis: family history of SUD in children from the ABCD study
 
 This repository contains the code to reproduce the analysis in Schilling et al. 2024, "Sex-specific differences in brain activity dynamics of youth with a family history of substance use disorder", bioRxiv.
 
