@@ -41,11 +41,11 @@ The following scripts should be used for each step of the analysis:
    `abcd_radar_plots.m`
    
 ### **Network Control Theory (NCT) Analysis**
-1. **Calculate subject-specific centroids.**:
+1. **Calculate subject-specific centroids**:
    `abcd_subj_centroids.m` and `abcd_generate_subcentroids.m`
-3. **Determine optimal T** (highest negative correlation between transition energy and probability):
+2. **Determine optimal T** (highest negative correlation between transition energy and probability):
    `abcd_tsweep.m`
-4. **Calculate transition energies** (using either group-average or individual structural connectivity):
+3. **Calculate transition energies** (using either group-average or individual structural connectivity):
   `abcd_calculate_TE.m`
 
 ### **Main Analyses**
