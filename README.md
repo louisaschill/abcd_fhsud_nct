@@ -41,11 +41,11 @@ The following scripts should be used for each step of the analysis:
    `abcd_radar_plots.m`
    
 ### **Network Control Theory (NCT) Analysis**
-1. **Calculate subject-specific centroids.**
-   `abcd_subj_centroids.m` and `abcd_generate_subcentroids.m` 
-2. **Determine optimal T** (highest negative correlation between transition energy and probability).
+1. **Calculate subject-specific centroids.**:
+   `abcd_subj_centroids.m` and `abcd_generate_subcentroids.m`
+3. **Determine optimal T** (highest negative correlation between transition energy and probability):
    `abcd_tsweep.m`
-3. **Calculate transition energies** (using either group-average or individual structural connectivity).
+4. **Calculate transition energies** (using either group-average or individual structural connectivity):
   `abcd_calculate_TE.m`
 
 ### **Main Analyses**
@@ -71,17 +71,17 @@ The following scripts should be used for each step of the analysis:
   `abcd_supp_indivSC.m`
 
 ### **Review Analyses**
-1. **Follow-up substance use and behavioral/environmental correlations**
+1. **Follow-up substance use and behavioral/environmental correlations**:
   `abcd_followupSU_review.m` and `abcd_cbcl_review.m`
-2. **Clusters by MRI model**
+2. **Clusters by MRI model**:
    `abcd_mri_centroids_review.m`  
-3. **Effects by type of family history of SUD**
+3. **Effects by type of family history of SUD**:
   `abcd_typeSUD_review.m`
-4. **FO/AR/DT/TP group-wise analysis**
+4. **FO/AR/DT/TP group-wise analysis**:
    `abcd_fractional_occ_review.m`
-5. **Analysis by puberty status**
+5. **Analysis by puberty status**:
   `abcd_puberty_review.m`
-6. **Prenatal substance exposure**
+6. **Prenatal substance exposure**:
   `abcd_prenatal_review.m`
 
 ---
