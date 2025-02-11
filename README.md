@@ -19,81 +19,53 @@ This code is based on previous work by (added here with modifications):
 The following scripts should be used for each step of the analysis:
 
 ### **Data Extraction and Pre-Processing**
-1. **Extract non-imaging data** (demographic, substance use, family history, etc.):  
-   `abcd_get_nonimaging.m`
-2. **Apply exclusion criteria:**  
-   `abcd_exclusions.m`
-3. **Extract and preprocess imaging data** (normalize by mean GM signal, remove outliers):  
-   `abcd_get_imaging.m`
-4. **Concatenate timeseries across all subjects for clustering:**  
-   `abcd_concTS.m`
-5. **Get mean framewise displacement for all subjects:**
-   `abcd_get_meanFD.m`
+1. **Extract non-imaging data** (demographic, substance use, family history, etc.): `abcd_get_nonimaging.m`
+2. **Apply exclusion criteria:** `abcd_exclusions.m`
+3. **Extract and preprocess imaging data** (normalize by mean GM signal, remove outliers): `abcd_get_imaging.m`
+4. **Concatenate timeseries across all subjects for clustering:** `abcd_concTS.m`
+5. **Get mean framewise displacement for all subjects:** `abcd_get_meanFD.m`
 
 ### ***k*-means clustering**
-1. **Run repeated *k*-means across a range of *k* values** to determine the optimal range:  
-   `abcd_repkmeans.m` and `run_kmeans.m`
-2. **Generate an elbow plot** for *k* selection: 
-   `abcd_elbow.m`
-3. **Obtain final clustering** using the partition with the highest adjusted mutual information across runs:  
-   `abcd_kmeans_ami.m`
-4. **Name clusters** using cosine similarity and radar plots (*Fig. 2*): 
-   `abcd_radar_plots.m`
+1. **Run repeated *k*-means across a range of *k* values** to determine the optimal range: `abcd_repkmeans.m` and `run_kmeans.m`
+2. **Generate an elbow plot** for *k* selection: `abcd_elbow.m`
+3. **Obtain final clustering** using the partition with the highest adjusted mutual information across runs: `abcd_kmeans_ami.m`
+4. **Name clusters** using cosine similarity and radar plots (*Fig. 2*): `abcd_radar_plots.m`
    
 ### **Network Control Theory (NCT) Analysis**
-1. **Calculate subject-specific centroids**:
-   `abcd_subj_centroids.m` and `abcd_generate_subcentroids.m`
-2. **Determine optimal T** (highest negative correlation between transition energy and probability):
-   `abcd_tsweep.m`
-3. **Calculate transition energies** (using either group-average or individual structural connectivity):
-  `abcd_calculate_TE.m`
+1. **Calculate subject-specific centroids.**: `abcd_subj_centroids.m` and `abcd_generate_subcentroids.m`
+2. **Determine optimal T** (highest negative correlation between transition energy and probability): `abcd_tsweep.m`
+3. **Calculate transition energies** (using either group-average or individual structural connectivity): `abcd_calculate_TE.m`
 
 ### **Main Analyses**
-1. **Global Transition Energy (TE) Analysis** (*Fig. 3*):  
-   `abcd_globalTE.m`
-2. **Network TE Analysis** (*Fig. 4*):  
-   `abcd_networkTE.m`
-3. **Regional TE Analysis** (*Fig. 5*):  
-   `abcd_regionalTE.m`
+1. **Global Transition Energy (TE) Analysis** (*Fig. 3*): `abcd_globalTE.m`
+2. **Network TE Analysis** (*Fig. 4*): `abcd_networkTE.m`
+3. **Regional TE Analysis** (*Fig. 5*): `abcd_regionalTE.m`
 
 ### **Supplementary Analyses**
-1. **NCANDA analysis**:
-   `ncanda_supp.m` 
-2. **Within-site**:
-   `abcd_supp_singlesite.m`
-3. **Within-income**:
-   `abcd_supp_income.m`
-4. **Within-MRI model**: 
-  `abcd_supp_model.m`
-5. **Analysis with *k* = 5**:
-  - Re-run clustering and above analysis with *k*=5
-6. **Individual SC analysis**:
-  `abcd_supp_indivSC.m`
+1. **NCANDA analysis**: `ncanda_supp.m` 
+2. **Within-site**: `abcd_supp_singlesite.m`
+3. **Within-income**: `abcd_supp_income.m`
+4. **Within-MRI model**: `abcd_supp_model.m`
+5. **Analysis with *k* = 5**: re-run clustering and above analysis with *k*=5
+6. **Individual SC analysis**: `abcd_supp_indivSC.m`
 
 ### **Review Analyses**
-1. **Follow-up substance use and behavioral/environmental correlations**:
-  `abcd_followupSU_review.m` and `abcd_cbcl_review.m`
-2. **Clusters by MRI model**:
-   `abcd_mri_centroids_review.m`  
-3. **Effects by type of family history of SUD**:
-  `abcd_typeSUD_review.m`
-4. **FO/AR/DT/TP group-wise analysis**:
-   `abcd_fractional_occ_review.m`
-5. **Analysis by puberty status**:
-  `abcd_puberty_review.m`
-6. **Prenatal substance exposure**:
-  `abcd_prenatal_review.m`
+1. **Follow-up substance use and behavioral/environmental correlations**: `abcd_followupSU_review.m` and `abcd_cbcl_review.m`
+2. **Clusters by MRI model**: `abcd_mri_centroids_review.m`  
+3. **Effects by type of family history of SUD**: `abcd_typeSUD_review.m`
+4. **FO/AR/DT/TP group-wise analysis**: `abcd_fractional_occ_review.m`
+5. **Analysis by puberty status**: `abcd_puberty_review.m`
+6. **Prenatal substance exposure**: `abcd_prenatal_review.m`
 
 ---
 
 ## Helper Functions
-- `ejc_bs_code_mod.m` - Modified code from EJ Cornblath by Parker Singleton ([Source](https://github.com/singlesp/energy_landscape))
-- `extractInstrument.m` - Extracts instruments from ABCD non-imaging data
-- `plotMatricesDiff.m` - Plots differences between two matrices
-- `mergeTables.m` - Merges tables based on subject keys
-- `runANCOVA.m` - Runs ANCOVAs on univariate or multivariate data
-- `extract_ancova_results.m` - Extracts specific results from ANCOVA outputs
-
+- `ejc_bs_code_mod.m` - moified code from EJ Cornblath by Parker Singleton ([Source](https://github.com/singlesp/energy_landscape))
+- `extractInstrument.m` - extracts instruments from ABCD non-imaging data
+- `plotMatricesDiff.m` - plots differences between two matrices
+- `mergeTables.m` - merges tables based on subject keys
+- `runANCOVA.m` - runs ANCOVAs on univariate or multivariate data
+- `extract_ancova_results.m` - extracts specific results from ANCOVA outputs
 ---
 
 ## Raw Data
