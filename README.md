@@ -1,4 +1,4 @@
-# NCT Analysis: family history of SUD in children from the ABCD study
+# Sex-specific differences in brain activity dynamics of youth with a family history of substance use disorder
 
 This repository contains the code to reproduce the analysis in Schilling et al. 2024, "Sex-specific differences in brain activity dynamics of youth with a family history of substance use disorder", bioRxiv.
 
