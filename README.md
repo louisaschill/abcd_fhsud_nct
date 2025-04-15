@@ -16,6 +16,9 @@ This repo relies on that of previous work (added here with modifications):
 ---
 
 ## Usage: Replicating the Analysis
+
+For ~6000 5 min fMRI scans and 86 ROIs, I was able to perform all of this analysis locally on a 2022 MacBook Pro with a total run time of <1 day, with the most time needed by k-means clustering. 
+
 The following scripts should be used for each step of the analysis:
 
 ### **Data Extraction and Pre-Processing**
