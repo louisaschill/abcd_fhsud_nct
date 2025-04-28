@@ -51,7 +51,7 @@ The following scripts should be used for each step of the analysis:
 4. **Within-MRI model**: `abcd_supp_model.m`
 5. **Analysis with *k* = 5**: re-run clustering and above analysis with *k*=5
 6. **Individual SC analysis**: `abcd_supp_indivSC.m`
-7. **Follow-up substance use and behavioral/environmental correlations**: `abcd_followupSU_review.m` and `abcd_cbcl_review.m`
+7. **Follow-up substance use and behavioral/environmental correlations**: `abcd_supp_followup_SU.m` and `abcd_cbcl_supp.m`
 8. **Clusters by MRI model**: `abcd_mri_centroids_review.m`  
 9. **Fractional occupancy group-wise analysis**: `abcd_fractional_occ_review.m`
 
