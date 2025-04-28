@@ -2,7 +2,7 @@
 
 This repository contains the code to reproduce the analysis in Schilling et al. 2024, "Sex-specific differences in brain activity dynamics of youth with a family history of substance use disorder", bioRxiv.
 
-This repo relies on that of previous work (added here with modifications):
+This repo relies on that of previous work (adapted version of relevant code has been added to this repo): 
 - Singleton et al., *Nature Communications*, 2022 ([Repo](https://github.com/singlesp/energy_landscape))
 - Cornblath et al., *Communications Biology*, 2020 ([Repo](https://github.com/ejcorn/brain_states))
 
@@ -11,8 +11,16 @@ This repo relies on that of previous work (added here with modifications):
 ## Requirements
 - **MATLAB R2017a or later**
 - Required package:
-  - `gramm`
+  - `gramm` plotting toolbox (https://github.com/piermorel/gramm)
+- Hardare: No non-standard hardware required; analyses were run locally on a MacBook Pro 2022.
 
+## Installation
+- Clone or download this repository.
+- Make sure you have MATLAB R2017a or later.
+- Install the gramm toolbox if not already installed.
+- Add all scripts and data paths to your MATLAB path.
+- Typical install time: Less than 5 minutes on a standard desktop or laptop.
+  
 ---
 
 ## Usage: Replicating the Analysis
