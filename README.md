@@ -51,24 +51,10 @@ The following scripts should be used for each step of the analysis:
 4. **Within-MRI model**: `abcd_supp_model.m`
 5. **Analysis with *k* = 5**: re-run clustering and above analysis with *k*=5
 6. **Individual SC analysis**: `abcd_supp_indivSC.m`
+7. **Follow-up substance use and behavioral/environmental correlations**: `abcd_followupSU_review.m` and `abcd_cbcl_review.m`
+8. **Clusters by MRI model**: `abcd_mri_centroids_review.m`  
+9. **Fractional occupancy group-wise analysis**: `abcd_fractional_occ_review.m`
 
-### **Review Analyses**
-1. **Follow-up substance use and behavioral/environmental correlations**: `abcd_followupSU_review.m` and `abcd_cbcl_review.m`
-2. **Clusters by MRI model**: `abcd_mri_centroids_review.m`  
-3. **Effects by type of family history of SUD**: `abcd_typeSUD_review.m`
-4. **FO/AR/DT/TP group-wise analysis**: `abcd_fractional_occ_review.m`
-5. **Analysis by puberty status**: `abcd_puberty_review.m`
-6. **Prenatal substance exposure**: `abcd_prenatal_review.m`
-
----
-
-## Helper Functions
-- `ejc_bs_code_mod.m` - moified code from EJ Cornblath by Parker Singleton ([Source](https://github.com/singlesp/energy_landscape))
-- `extractInstrument.m` - extracts instruments from ABCD non-imaging data
-- `plotMatricesDiff.m` - plots differences between two matrices
-- `mergeTables.m` - merges tables based on subject keys
-- `runANCOVA.m` - runs ANCOVAs on univariate or multivariate data
-- `extract_ancova_results.m` - extracts specific results from ANCOVA outputs
 ---
 
 ## Raw Data
