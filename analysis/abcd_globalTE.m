@@ -1,63 +1,73 @@
 % Louisa Schilling - updated 
 % Global TE analysis 
- clear all; close all;
+clear all; close all;
 
 dataDir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Data';
 resultsDir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Results/energy';
-figureDir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Figures'; 
+figureDir = '/Users/louisaschilling/Desktop/FINAL CODE PAPER/Figures/Final'; mkdir(figureDir);
 
-parc = 'fs86'; numClusters = 4; k = 4; 
+parc = 'fs86'; k = 4; numClusters = k; 
 ts_type = 'bp_gsr_gmnorm_exclout'; sc_type = 'avg'; 
-
-clusterOrder = [1,2,4,3]; % put in order DMN+, DMN-, VIS+, VIS-
 
 % Load subject info
 load([dataDir '/subjectInfo_SUDcohort.mat']);
 nsubjs = height(subjectInfo);
 
-% Load optimal T from abcd_tsweep.mat
 c = 1;
-load([resultsDir '/optimalT_k',num2str(numClusters),'_c',num2str(c), '_' ts_type, '_sc_' sc_type '_noself_' num2str(nsubjs) '.mat'],'T'); 
+
+% Load optimal T from abcd_tsweep.mat
+load([resultsDir '/optimalT_k4_c',num2str(c), '_' ts_type, '_sc_' sc_type '_noself_' num2str(nsubjs) '.mat'],'T'); 
 
 % Load subject energy
 load(fullfile(resultsDir, ['subjenergy_k',num2str(numClusters), '_T' num2str(T),...
     '_c',num2str(c),'_', ts_type, '_', sc_type, 'noselfSC_' parc '_' num2str(nsubjs) '.mat']));
 
-% Check subjectInfo and TE results in same order 
-if ~all(strcmp(subjkeys,subjectInfo.subjectkey))
-    error('Subject keys not in same order for FD mean');
-end 
- 
+% Rearrange cluster order to be DMN+, DMN-, VIS+, VIS-
+if numClusters == 4 
+    DMN_pos_ind = find(strcmp(clusterNames,'DMN+'));
+    DMN_neg_ind = find(strcmp(clusterNames,'DMN-'));
+    VIS_pos_ind = find(strcmp(clusterNames,'VIS+'));
+    VIS_neg_ind = find(strcmp(clusterNames,'VIS-'));
+    clusterOrder = [DMN_pos_ind,DMN_neg_ind,VIS_pos_ind,VIS_neg_ind];
+end
+
+% Check subject order 
+assert(all(strcmp(subjkeys, subjectInfo.subjectkey)), 'Subject keys do not match.');
+
 % Load FD
 load(fullfile(dataDir, 'MeanFD_PerSubject.mat'), 'resultsTable');
 % Check subjectInfo and TE results in same order 
+
 if ~all(strcmp(resultsTable.subjectkey,subjectInfo.subjectkey))
     error('Subject keys not in same order for FD mean');
 end 
 subjectInfo.FD_mean = resultsTable.FD_mean; 
 subjectInfo.FD_mean_nanoutlier = resultsTable.FD_mean_nanoutlier; 
 
-outlier = isoutlier(globalTE,"median"); % Remove outliers
+outlier = isoutlier(globalTE,"quartiles") | isnan(globalTE);
+
+[h,p,c,s] = ttest2(subjectInfo.FD_mean(outlier == 1),subjectInfo.FD_mean(outlier == 0));
+
+disp(['N = ' num2str(length(outlier(outlier==1))) ' subjects with outlier globalTE removed']);
 subjectInfo = subjectInfo(~outlier,:);
 globalTE = globalTE(~outlier); 
 E_full = E_full(~outlier,:); 
 
 %% ANCOVA 
-subjectInfo.model = categorical(cellstr(subjectInfo.model));
-inds = (subjectInfo.FHSUD == 'FH+' | subjectInfo.FHSUD == 'FH-'); %not FH+/-
-anovaVarNames = {'Sex','Age','FHSUD','FD','MRI Model','Income Category',...
-    'Parent Edu Category','Race','In Utero Substances',...
-    'Parental History Mental Health','Puberty'};
-interaction_term_sets = {{'Sex', 'FHSUD'}, {'FHSUD','Income Category'}};
-contVar = [2,4]; 
+inds = (subjectInfo.FHSUD == 'FH+' | subjectInfo.FHSUD == 'FH-'); 
+anovaVarNames = {'Sex','Age','FHSUD','FD','Model','Income',...
+    'Parent Education','Race','Prenatal','Parent MH', 'Puberty'};
+interaction_term_sets = {{'Sex', 'FHSUD'},{'FHSUD','Income'},{'Sex','Puberty'}};
+contVar = [2,4];
 anovaVars = {subjectInfo.sex(inds)=='F', subjectInfo.age(inds),...
     subjectInfo.FHSUD(inds) == 'FH+', subjectInfo.FD_mean(inds),...
     subjectInfo.model(inds), subjectInfo.income_cat(inds),...
     subjectInfo.parentEd_cat(inds), subjectInfo.race(inds),...
-    subjectInfo.subDuringPreg(inds), subjectInfo.parentMH(inds), ...
-    subjectInfo.puberty_combined(inds)};
+    categorical(subjectInfo.subDuringPregAfter(inds)),...
+    subjectInfo.parentMH(inds) == 1,...
+    categorical(subjectInfo.pds_mod(inds))};
 
-[all_results,stats] = run_ANOVA(globalTE(inds),anovaVars,contVar,...
+[all_results, stats, ~, ~, ~]  = run_ANOVA(globalTE(inds),anovaVars,contVar,...
     anovaVarNames,interaction_term_sets,'off');
 disp(all_results)
 [F_stats_sexsud,p_val_sexsud, ~, ~, ~] = extract_anova_results(all_results, 'Sex:FHSUD');
@@ -117,25 +127,24 @@ g(1,1) = gramm('x', subjectInfo.sexFHSUD, 'y', globalTE, 'color', subjectInfo.FH
 g(1,1).stat_boxplot('width',0.15);
 g(1,1).stat_violin('normalization','width','dodge', 0,'fill','edge');
 g(1,1).axe_property('YGrid', 'on', 'GridColor', [0.5,0.5,0.5]);
-g(1,1).set_names('x', 'sex * family history of SUD', 'y', 'global transition energy', 'color', '');
+g(1,1).set_names('x', 'sex:family history of SUD', 'y', 'global transition energy', 'color', '');
 g(1,1).set_text_options('base_size', 20,'Font','calibri');
-g(1,1).no_legend();
 g(1,1).set_color_options('map',[[0.200,0.627,0.173];[0.122,0.471,0.706]]);
 
 g(1,2) = gramm('x', subjectInfo.familydensitySUD, 'y', globalTE,...
     'color', subjectInfo.sex);
-g(1,2).geom_point();
+g(1,2).geom_point('dodge', 0.2);
 g(1,2).stat_glm();
 g(1,2).axe_property('YGrid', 'on','GridColor',[0.5,0.5,0.5]);
 g(1,2).set_text_options('base_size',20,'Font','calibri');
-g(1,2).no_legend();
 g(1,2).set_color_options('map',[[0.596, 0.306, 0.639];[0.105, 0.620, 0.467]]); 
-g(1,2).set_names('x', 'family history density', 'y', 'global transition energy','color', 'Sex');
+g(1,2).set_names('x', 'family history density', 'y', 'global transition energy','color', '');
 g.set_title('  ');  % to fix bug where axis is cut off 
 g.draw(); 
 exportgraphics(f, [figureDir '/Fig2ab_violin_fhd_global_k' num2str(numClusters) '.png']);
 
-%%
+%% Correlation FHD x globalTE by sex 
+
 inds = subjectInfo.sex == 'F'; 
 [r1,p1] = corr(subjectInfo.familydensitySUD(inds),globalTE(inds),'type','Spearman','rows','complete'); 
 inds = subjectInfo.sex == 'M'; 
@@ -145,7 +154,9 @@ pcorr = mafdr([p1, p2],'bhfdr','true');
 disp(['Females: r = ' num2str(r1,2) ', p = ' num2str(p1,2)]);
 disp(['Males: r = ' num2str(r2,2) ', p = ' num2str(p2,2)]);
 
+
 %% Sex:FHSUD matrix
+if k==5; clusterOrder = [1, 3, 5,4,2];end
 clusterNamesOrdered = clusterNames(clusterOrder); 
 inds = (subjectInfo.FHSUD == 'FH+' | subjectInfo.FHSUD == 'FH-');
 
@@ -197,7 +208,7 @@ exportgraphics(f, [figureDir '/Fig2c_sexfhsud_matrix_global_k' num2str(numCluste
 [~,pm,~,s] = ttest2(E_full(subjectInfo.sexFHSUD == 'M-FH+',:),...
     E_full(subjectInfo.sexFHSUD == 'M-FH-',:)); tm = s.tstat; 
 
-lLim =  -2; uLim = 3.0; 
+lLim =  -3; uLim = 3.0; 
 colorLim = [lLim uLim];
 
 saveName = []; titletext = []; bhfdr = 1; 
@@ -216,4 +227,3 @@ inds = subjectInfo.sexFHSUD == 'M-FH+' | subjectInfo.sexFHSUD == 'M-FH-';
     numClusters,clusterNames,saveName, ["M-FH+", "M-FH-"],'males only: FH+ vs FH-',...
     pm,bhfdr,colorLim,clusterOrder,1,'t-statistic');
 exportgraphics(f, [figureDir '/Fig2d_males_pairwise_global_k' num2str(numClusters) '.png']);
-
