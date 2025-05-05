@@ -12,7 +12,7 @@ This repo relies on that of previous work (adapted version of relevant code has 
 - **MATLAB R2017a or later**
 - Required package:
   - `gramm` plotting toolbox (https://github.com/piermorel/gramm)
-- Hardare: No non-standard hardware required; analyses were run locally on a MacBook Pro 2022.
+- Hardware: No non-standard hardware required; analyses were run locally on a MacBook Pro 2022.
 
 ## Installation
 - Clone or download this repository.
